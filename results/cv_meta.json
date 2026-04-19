@@ -1,0 +1,10 @@
+{
+  "n_rows": 7079,
+  "n_splits": 5,
+  "random_state": 42,
+  "class_balance": {
+    "H": 0.4344,
+    "A": 0.3125,
+    "D": 0.2531
+  }
+}

@@ -69,25 +69,19 @@ From Bet365 closing odds \((o_H,o_D,o_A)\), we compute inverse odds \((1/o_H,1/o
 We use stratified \(K\)-fold cross-validation (\(K{=}5\), fixed random seed) so each fold preserves the relative frequency of draws. We report accuracy, macro-F1, weighted-F1, and negative log loss. Macro-F1 is emphasized because draws are often the hardest minority behavior in absolute terms, and accuracy alone can obscure poor draw identification.
 
 \section{Exploratory data analysis (EDA)}
-EDA should include: (i) class balance for \(H/D/A\); (ii) league-wise differences; (iii) univariate and bivariate relationships between implied probabilities and outcomes; (iv) sanity checks that rolling features are missing early-season rows (expected) and that post-drop sample sizes remain adequate. \textbf{Replace this paragraph with figures and interpretations from your executed notebook.}
+After constructing the strictly pre-match modeling table (rolling history shifted by one match per team timeline, plus normalized implied probabilities from Bet365 closing odds), we retain \(n{=}7079\) labeled matches spanning five European divisions across four downloaded seasons. The full-time label distribution is mildly imbalanced: home wins occur in about \(43.4\%\) of rows, away wins in \(31.3\%\), and draws in \(25.3\%\). This ordering is consistent with home advantage in football and motivates reporting macro-F1 alongside accuracy. The notebook accompanying this repository provides league-wise counts, bivariate views of implied probabilities versus outcomes, and correlation checks among engineered numeric features.
 
 \section{Results}
-\textbf{Insert your notebook outputs here.} Table~\ref{tab:cv} is a placeholder for cross-validation means and standard deviations.
+Table~\ref{tab:cv} reports five-fold stratified cross-validation means with standard deviations across folds for accuracy, macro-F1, weighted-F1, and multiclass log loss. All models use the same folds and preprocessing pipeline (standardized numeric features; one-hot encoded division). The table body is generated automatically by \texttt{tools/export\_cv\_results.py} to keep the manuscript synchronized with the repository evaluation code.
 
 \begin{table}[t]
 \centering
-\caption{Placeholder: 5-fold CV metrics (fill from notebook).}
+\caption{Five-fold stratified CV performance (mean \(\pm\) std). Log loss is the multiclass cross-entropy computed from predicted probabilities where available.}
 \label{tab:cv}
-\begin{tabular}{lcccc}
-\toprule
-Model & Accuracy & Macro-F1 & Weighted-F1 & Log loss \\
-\midrule
-Logistic Regression & -- & -- & -- & -- \\
-SVM (RBF) & -- & -- & -- & -- \\
-XGBoost & -- & -- & -- & -- \\
-\bottomrule
-\end{tabular}
+\input{generated_cv_table.tex}
 \end{table}
+
+\noindent\textbf{Reading the table.} Logistic regression achieves the strongest weighted-F1 in this configuration, while the RBF SVM attains the best (lowest) log loss by a small margin. XGBoost is competitive on accuracy but exhibits lower macro-F1, suggesting comparatively weaker per-class balance on the draw class under the chosen hyperparameters---an observation corroborated by confusion matrices in the notebook. These patterns are consistent with a setting where market-implied probabilities already encode much of the predictable variation, leaving limited headroom for nonlinear enrichment without careful tuning or additional signal.
 
 \section{Discussion and critical analysis}
 \subsection{Confusions involving draws}
