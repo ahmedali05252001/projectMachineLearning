@@ -1,0 +1,131 @@
+% Conference-style paper skeleton (Springer-like structure).
+% If your course mandates an official Springer/LNCS class file, replace the preamble accordingly.
+
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{hyperref}
+
+\geometry{margin=1in}
+\hypersetup{colorlinks=true,linkcolor=blue,urlcolor=blue,citecolor=blue}
+
+\title{Multiclass Prediction of Football Match Outcomes (H/D/A) Using Pre-Match Features:\\
+A Comparative Study of Logistic Regression, SVM, and XGBoost}
+
+\author{
+  Student Group (replace with names and affiliations)\\
+  \texttt{replace.with@student.email}
+}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We study the multiclass classification problem of predicting full-time match outcomes for top-tier European football leagues, where classes correspond to home win (\(H\)), draw (\(D\)), and away win (\(A\)). Using publicly available match records and closing betting odds, we construct a strictly \emph{pre-match} feature representation based on (i) normalized implied probabilities derived from Bet365 closing odds and (ii) team performance summaries computed from a rolling window over prior matches with temporal shifting to prevent same-match leakage. We compare three models under an identical evaluation protocol: multinomial logistic regression as a linear baseline, a nonlinear support vector machine with an RBF kernel, and gradient-boosted trees (XGBoost). Evaluation uses stratified \(K\)-fold cross-validation and reports accuracy, macro/weighted F1, and multiclass log loss, complemented by confusion matrices to analyze systematic confusions involving draws. Our goal is not to claim a deployable betting system, but to provide a reproducible, methodology-focused benchmark aligned with best practices in leakage-aware sports analytics.
+\end{abstract}
+
+\section{Introduction}
+Football match outcome prediction is a canonical applied machine learning problem with immediate intuitive appeal: outcomes are discrete, data are abundant, and domain knowledge suggests predictive signals such as team strength and recent form. At the same time, the problem is an instructive testbed for \emph{rigorous experimental design} because naive pipelines can trivially leak information from the match being predicted (e.g., using full-time goals or within-match statistics as inputs).
+
+This paper presents an end-to-end student project workflow: problem definition, exploratory data analysis (EDA), preprocessing, model implementation, and comparative evaluation with critical discussion. We emphasize transparency about what information is available at prediction time and we align all models to the same cross-validation strategy for fair comparison.
+
+\section{Problem definition}
+Let each record correspond to a scheduled match between a home team and an away team in a league division \(\texttt{Div}\) at datetime \(t\). The label is
+\[
+y \in \{H, D, A\},
+\]
+where \(H\) indicates a home win, \(D\) a draw, and \(A\) an away win, encoded as \(\{0,1,2\}\) for library compatibility. The learning task is to estimate \(P(y\mid \mathbf{x})\) (or a discriminant boundary) from a feature vector \(\mathbf{x}\) constructed using only information available before kickoff at time \(t\).
+
+\section{Data and provenance}
+We retrieve historical league CSV files from the public football-data repository mirror (\texttt{football-data.co.uk}) for five European divisions (e.g., English Premier League \texttt{E0}, Spanish La Liga \texttt{SP1}, Italian Serie A \texttt{I1}, German Bundesliga \texttt{D1}, French Ligue 1 \texttt{F1}) across multiple seasons. Each row contains identifiers (division, date/time, teams), full-time outcomes, and a rich set of optional columns including bookmaker odds.
+
+\subsection{Why odds appear in our feature set}
+Closing odds summarize a large body of public information aggregated by markets. For coursework, they provide strong baseline signal while remaining \emph{pre-match}. In a critical discussion, we acknowledge limitations: odds reflect bookmaker objectives and market behavior, not ground truth causal mechanisms, and models that rely heavily on odds may be uninteresting for certain scientific questions.
+
+\section{Methodology}
+\subsection{Leakage-aware rolling team features}
+We transform match tables into a team-centric longitudinal table: each match generates two rows (home team perspective and away team perspective). For each team, we sort rows chronologically and compute rolling means of goals for, goals against, points earned, and the proportion of recent matches played at home, using a rolling window of five matches. Critically, we apply a per-team temporal \texttt{shift(1)} so that features for match \(t\) depend only on matches strictly before \(t\).
+
+\subsection{Implied probabilities}
+From Bet365 closing odds \((o_H,o_D,o_A)\), we compute inverse odds \((1/o_H,1/o_D,1/o_A)\) and normalize to sum to one, yielding debiased implied probabilities \((\hat p_H,\hat p_D,\hat p_A)\). We also retain the overround \(\sum_i 1/o_i\) as a scalar market characteristic.
+
+\subsection{Models}
+\textbf{Baseline: multinomial logistic regression} provides a linear, interpretable reference with calibrated multiclass softmax outputs under appropriate conditions.
+
+\textbf{SVM:} we use an RBF-kernel SVC with class weights to mitigate mild imbalance, and enable probability estimates for log-loss evaluation.
+
+\textbf{XGBoost:} we use a tree ensemble with multiclass softmax probability outputs, which captures nonlinear interactions among form indicators and odds-derived features.
+
+\subsection{Evaluation protocol}
+We use stratified \(K\)-fold cross-validation (\(K{=}5\), fixed random seed) so each fold preserves the relative frequency of draws. We report accuracy, macro-F1, weighted-F1, and negative log loss. Macro-F1 is emphasized because draws are often the hardest minority behavior in absolute terms, and accuracy alone can obscure poor draw identification.
+
+\section{Exploratory data analysis (EDA)}
+EDA should include: (i) class balance for \(H/D/A\); (ii) league-wise differences; (iii) univariate and bivariate relationships between implied probabilities and outcomes; (iv) sanity checks that rolling features are missing early-season rows (expected) and that post-drop sample sizes remain adequate. \textbf{Replace this paragraph with figures and interpretations from your executed notebook.}
+
+\section{Results}
+\textbf{Insert your notebook outputs here.} Table~\ref{tab:cv} is a placeholder for cross-validation means and standard deviations.
+
+\begin{table}[t]
+\centering
+\caption{Placeholder: 5-fold CV metrics (fill from notebook).}
+\label{tab:cv}
+\begin{tabular}{lcccc}
+\toprule
+Model & Accuracy & Macro-F1 & Weighted-F1 & Log loss \\
+\midrule
+Logistic Regression & -- & -- & -- & -- \\
+SVM (RBF) & -- & -- & -- & -- \\
+XGBoost & -- & -- & -- & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Discussion and critical analysis}
+\subsection{Confusions involving draws}
+Even strong predictors may struggle with \(D\) because it is a structurally narrow outcome in continuous-time play. Confusion matrices typically reveal whether errors are symmetric or dominated by predicting wins.
+
+\subsection{Baseline strength of odds}
+If odds dominate the signal, improvements from nonlinear models may be marginal; this is scientifically meaningful: it suggests market information already encodes much of what rolling form captures at short windows.
+
+\subsection{Deployment and ethics}
+We discourage interpreting results as betting advice. Sports betting carries harm risks; any ``deployment'' discussion should foreground regulation, responsible gambling, and model uncertainty.
+
+\section{Conclusion}
+We presented a reproducible multiclass framework for \(H/D/A\) prediction with explicit leakage controls and a unified cross-validation evaluation of logistic regression, SVM, and XGBoost. Future work includes strictly temporal validation by season, richer team-strength models (e.g., Elo), and alternative targets such as expected goals (xG) where available.
+
+\section*{Acknowledgments}
+Replace with instructor/course acknowledgments if required.
+
+\begin{thebibliography}{99}
+\bibitem{footballdata}
+Football-Data.co.uk, match statistics and odds datasets, accessed 2026,\\
+\url{https://www.football-data.co.uk/}
+
+\bibitem{footballdatanotes}
+Football-Data notes file (column definitions),\\
+\url{https://www.football-data.co.uk/notes.txt}
+
+\bibitem{sklearn}
+Pedregosa et al., Scikit-learn: Machine Learning in Python, JMLR 12 (2011) 2825--2830.
+
+\bibitem{xgboost}
+Chen \& Guestrin, XGBoost: A Scalable Tree Boosting System, KDD 2016.
+\end{thebibliography}
+
+\appendix
+\section{Generative AI and authorship (fill for course policy)}
+\textbf{Template (edit honestly):} We used generative AI assistance for [\ldots] (e.g., boilerplate code organization, LaTeX formatting suggestions, grammar polishing). All methodological choices (leakage constraints, evaluation, and interpretation) were reviewed and validated by the authors. Results were reproduced by executing the repository notebook on dated downloads. AI tools were not used to fabricate empirical numbers.
+
+\section{Plagiarism and originality}
+The authors confirm that prose attributed to prior work is paraphrased with citation, and that code reused from public tutorials is transformed, cited, and understood.
+
+\end{document}
