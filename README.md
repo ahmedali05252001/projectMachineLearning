@@ -2,6 +2,8 @@
 
 **GitHub:** `https://github.com/ahmedali05252001/projectMachineLearning`
 
+Nëse punon **vetëm** (jo grup): projekti mbetet i njëjtë metodologjikisht; në prezantim/raport përdor “unë/autori” në vend të “ne/grupi”, dhe zëvendëso emrin/email-in në `report/paper.tex`. Nëse kursi kërkon **patjetër** grup, shkruaj me email profesorit **para** dorëzimit.
+
 Ky repo përmban një projekt të plotë **klasifikimi multiclass** për rezultatin e ndeshjes së futbollit (**H** fiton vendasi, **D** barazim, **A** fiton vizitori), me **EDA**, **preprocessing + feature engineering pa leakage**, dhe tre modele: **Logistic Regression (baseline)**, **SVM (RBF)**, dhe **XGBoost**.
 
 This repository is intentionally bilingual (SQ/EN) so you can paste blocks directly into a course report written in Albanian or English.
